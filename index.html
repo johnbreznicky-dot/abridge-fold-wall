@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Abridge Fold Wall</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,400..700&family=Archivo+Narrow:wght@500;600&display=swap">
+</head>
+<body>
+<style>
+  :root {
+    --bg: #ece7dc;
+    --bg-2: #e2dccf;
+    --ink: #17150f;
+    --ink-2: #5b5648;
+    --line: #c9c2b2;
+    --bone: #e9e3d6;
+    --black: #141210;
+    --accent: #d4531c;
+    --accent-2: #2f6b8a;
+    --card: #f4f1ea;
+    --canvas-bg: #0d0c0a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #17150f; --bg-2: #1f1c15; --ink: #ebe5d8; --ink-2: #a39c8b;
+      --line: #3a362c; --card: #201d16; --canvas-bg: #070706;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #17150f; --bg-2: #1f1c15; --ink: #ebe5d8; --ink-2: #a39c8b;
+    --line: #3a362c; --card: #201d16; --canvas-bg: #070706;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: "Archivo", "Helvetica Neue", Arial, sans-serif;
+    font-variation-settings: "wdth" 92;
+    padding-block: 20px 40px; padding-inline: 16px;
+    max-width: 1280px; margin-inline: auto;
+    font-variant-numeric: tabular-nums;
+  }
+  header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 20px; margin-bottom: 14px; }
+  h1 { font-family: "Archivo Narrow", "Archivo", sans-serif; font-weight: 600; font-size: 26px; letter-spacing: -0.01em; margin: 0; }
+  header p { margin: 0; color: var(--ink-2); font-size: 14px; max-width: 60ch; }
+  .lbl { font-family: "Archivo Narrow", sans-serif; font-weight: 600; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-2); }
+
+  .view { background: var(--canvas-bg); border: 1px solid var(--line); position: relative; }
+  .view canvas { display: block; width: 100%; height: auto; }
+  .view .tag { position: absolute; top: 10px; left: 12px; color: #bdb4a2; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; font-family: "Archivo Narrow", sans-serif; font-weight: 600; }
+  .view .tag b { color: #fff; font-weight: 600; }
+
+  .presets { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; align-items: center; }
+  button { font: inherit; font-family: "Archivo Narrow", sans-serif; font-weight: 600; font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase;
+    background: var(--card); color: var(--ink); border: 1px solid var(--line); padding: 8px 14px; cursor: pointer; }
+  button:hover { border-color: var(--ink-2); }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .presets .sp { flex: 1; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+  .panel { background: var(--card); border: 1px solid var(--line); padding: 16px; }
+  .panel h2 { margin: 0 0 12px; font-family: "Archivo Narrow", sans-serif; font-weight: 600; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-2); }
+
+  .ctl { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
+  .ctl:first-of-type { border-top: 0; }
+  .ctl label { font-size: 13px; }
+  .ctl output { font-size: 13px; font-weight: 600; min-width: 6ch; text-align: right; }
+  .ctl input[type=range] { grid-column: 1 / -1; width: 100%; accent-color: var(--accent); margin: 0; }
+  .ctl small { grid-column: 1 / -1; color: var(--ink-2); font-size: 12px; }
+
+  #plan { width: 100%; height: auto; display: block; background: var(--bg-2); border: 1px solid var(--line); }
+
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0; margin-top: 16px; border: 1px solid var(--line); background: var(--card); }
+  .stat { padding: 12px 14px; border-right: 1px solid var(--line); }
+  .stat:last-child { border-right: 0; }
+  .stat .v { font-family: "Archivo Narrow", sans-serif; font-weight: 600; font-size: 22px; line-height: 1.1; margin-top: 4px; }
+  .stat .v small { font-size: 12px; color: var(--ink-2); font-weight: 500; }
+  .stat.a .v { color: var(--accent-2); } .stat.b .v { color: var(--accent); }
+
+  .files { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+  @media (max-width: 480px) { .files { grid-template-columns: 1fr; } }
+  .file { border: 1px dashed var(--line); padding: 10px; font-size: 12px; }
+  .file .sw { display: block; width: 100%; aspect-ratio: 5 / 2; background: var(--bone); border: 1px solid var(--line); margin-bottom: 8px; object-fit: cover; }
+  .file input { width: 100%; font-size: 12px; }
+  .note { color: var(--ink-2); font-size: 12px; margin-top: 12px; line-height: 1.45; }
+  .spec { margin-top: 12px; font-size: 13px; line-height: 1.5; }
+  .spec div { display: flex; justify-content: space-between; gap: 12px; border-top: 1px solid var(--line); padding: 5px 0; }
+  .spec div:first-child { border-top: 0; }
+  .spec b { font-weight: 600; }
+</style>
+
+<header>
+  <h1>Abridge Fold Wall</h1>
+  <p>Pleated two-view wall. Left faces carry the bridge, right faces carry the full A. Drag the seat and watch what the room sees.</p>
+</header>
+
+<div class="view">
+  <canvas id="wall" width="2400" height="960"></canvas>
+  <div class="tag">Seat view · <b id="seatTag">center</b></div>
+</div>
+
+<div class="presets">
+  <span class="lbl">Seat</span>
+  <button id="pL" data-x="-40" data-z="20">Front corner L</button>
+  <button id="pC" data-x="0" data-z="20" class="on">Center / camera</button>
+  <button id="pR" data-x="40" data-z="20">Front corner R</button>
+  <button id="pB" data-x="0" data-z="70">Back row</button>
+  <span class="sp"></span>
+  <button id="sweep">Walk the room</button>
+</div>
+
+<div class="grid">
+  <div class="panel">
+    <h2>Geometry</h2>
+    <div class="ctl"><label for="seatX">Seat position, from center</label><output id="seatXo">0.0 ft</output>
+      <input type="range" id="seatX" min="-40" max="40" step="0.25" value="0"></div>
+    <div class="ctl"><label for="dist">Distance to wall</label><output id="disto">20 ft</output>
+      <input type="range" id="dist" min="6" max="70" step="0.5" value="20">
+      <small>Seating is 80 ft wide by 50 ft deep, first row 20 ft off the wall.</small></div>
+    <div class="ctl"><label for="pitch">Pleat pitch</label><output id="pitcho">12 in</output>
+      <input type="range" id="pitch" min="6" max="24" step="1" value="12"></div>
+    <div class="ctl"><label for="ang">Face angle off the wall plane</label><output id="ango">40°</output>
+      <input type="range" id="ang" min="15" max="65" step="1" value="40">
+      <small>Beyond this angle off axis, one image reads clean. Inside it, the two blend.</small></div>
+    <div class="ctl"><label for="wid">Wall width</label><output id="wido">20 ft</output>
+      <input type="range" id="wid" min="8" max="40" step="1" value="20"></div>
+    <div class="ctl"><label for="hgt">Wall height</label><output id="hgto">8 ft</output>
+      <input type="range" id="hgt" min="4" max="16" step="0.5" value="8"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Plan · seat and sightlines</h2>
+    <canvas id="plan" width="1200" height="720"></canvas>
+    <div class="files">
+      <div class="file"><img id="thA" class="sw" alt="Left-face image"><span class="lbl">Left faces · image A</span><br>
+        <input type="file" id="fA" accept="image/*"></div>
+      <div class="file"><img id="thB" class="sw" alt="Right-face image"><span class="lbl">Right faces · image B</span><br>
+        <input type="file" id="fB" accept="image/*"></div>
+    </div>
+    <p class="note">Placeholder art is a stand-in A with an arched bridge, registered identically on both faces. Drop in the real logo files at the wall's aspect ratio and the mapping stays the same: each face gets one vertical stripe of its image.</p>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat a"><span class="lbl">Image A on screen</span><div class="v" id="sA">–</div></div>
+  <div class="stat b"><span class="lbl">Image B on screen</span><div class="v" id="sB">–</div></div>
+  <div class="stat"><span class="lbl">Seat off axis</span><div class="v" id="sAng">–</div></div>
+  <div class="stat"><span class="lbl">Pleats · faces</span><div class="v" id="sN">–</div></div>
+  <div class="stat"><span class="lbl">Pleat depth</span><div class="v" id="sD">–</div></div>
+  <div class="stat"><span class="lbl">Face width</span><div class="v" id="sF">–</div></div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+  <h2>Fabrication readout</h2>
+  <div class="spec" id="spec"></div>
+</div>
+
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const wallC = $('wall'), wctx = wallC.getContext('2d');
+  const planC = $('plan'), pctx = planC.getContext('2d');
+
+  const S = { seatX: 0, dist: 20, pitch: 12, ang: 40, wid: 20, hgt: 8 };
+  const BONE = '#e9e3d6', BLACK = '#141210';
+
+  // ---------- placeholder art ----------
+  function makeArt(withLegs) {
+    const W = 2000, H = 800;
+    const c = document.createElement('canvas'); c.width = W; c.height = H;
+    const g = c.getContext('2d');
+    g.fillStyle = BONE; g.fillRect(0, 0, W, H);
+    g.strokeStyle = BLACK; g.lineCap = 'butt'; g.lineJoin = 'miter';
+    const stroke = 0.075 * W;              // ~18" on a 20' wall
+    g.lineWidth = stroke;
+    if (withLegs) {
+      g.beginPath();
+      g.moveTo(0.30 * W, 0.94 * H); g.lineTo(0.50 * W, 0.08 * H); g.lineTo(0.70 * W, 0.94 * H);
+      g.stroke();
+    }
+    // the bridge: an arch spanning the legs, identical on both faces
+    g.beginPath();
+    g.moveTo(0.335 * W, 0.70 * H);
+    g.quadraticCurveTo(0.50 * W, 0.42 * H, 0.665 * W, 0.70 * H);
+    g.stroke();
+    return c;
+  }
+  let imgA = makeArt(false), imgB = makeArt(true);
+  function setThumb(el, img) { el.src = img instanceof HTMLCanvasElement ? img.toDataURL() : img.src; }
+  setThumb($('thA'), imgA); setThumb($('thB'), imgB);
+
+  function loadFile(input, which) {
+    input.addEventListener('change', () => {
+      const f = input.files && input.files[0]; if (!f) return;
+      const url = URL.createObjectURL(f); const im = new Image();
+      im.onload = () => { if (which === 'A') imgA = im; else imgB = im; setThumb(which === 'A' ? $('thA') : $('thB'), im); render(); };
+      im.src = url;
+    });
+  }
+  loadFile($('fA'), 'A'); loadFile($('fB'), 'B');
+
+  // ---------- geometry ----------
+  function geom() {
+    const p = S.pitch / 12;                       // ft
+    const N = Math.max(1, Math.round(S.wid / p));
+    const pitch = S.wid / N;                       // ft, even split across the width
+    const th = S.ang * Math.PI / 180;
+    const d = (pitch / 2) * Math.tan(th);          // pleat depth, ft
+    const face = (pitch / 2) / Math.cos(th);       // face width, ft
+    const segs = [];                               // [x0,z0,x1,z1,pleat,side]
+    for (let i = 0; i < N; i++) {
+      const x0 = -S.wid / 2 + i * pitch, xr = x0 + pitch / 2, x1 = x0 + pitch;
+      segs.push([x0, 0, xr, d, i, 0]);             // left face  (image A)
+      segs.push([xr, d, x1, 0, i, 1]);             // right face (image B)
+    }
+    return { N, pitch, d, face, segs, th };
+  }
+
+  // ray from viewer V through direction D, hit segment
+  function hit(Vx, Vz, Dx, Dz, s) {
+    const ex = s[2] - s[0], ez = s[3] - s[1];
+    const den = Dx * ez - Dz * ex;
+    if (Math.abs(den) < 1e-12) return null;
+    const wx = s[0] - Vx, wz = s[1] - Vz;
+    const t = (wx * ez - wz * ex) / den;
+    const u = (wx * Dz - wz * Dx) / den;
+    if (t <= 0 || u < 0 || u > 1) return null;
+    return { t, u };
+  }
+
+  // ---------- seat view ----------
+  function render() {
+    const G = geom();
+    const Vx = S.seatX, Vz = S.dist;
+    const W = wallC.width, H = wallC.height;
+    // screen coordinate s = (x - Vx)/(Vz - z); wall ends at z=0
+    const sL = (-S.wid / 2 - Vx) / Vz, sR = (S.wid / 2 - Vx) / Vz;
+    const pad = (sR - sL) * 0.04;
+    const s0 = sL - pad, s1 = sR + pad;
+    wctx.fillStyle = '#0d0c0a'; wctx.fillRect(0, 0, W, H);
+
+    // keep the wall's real aspect: height in screen units at center distance
+    const wallScreenW = sR - sL;
+    const wallPxW = W * (wallScreenW / (s1 - s0));
+    const wallPxH = Math.min(H * 0.86, wallPxW * (S.hgt / S.wid));
+    const top = (H - wallPxH) / 2;
+
+    let wA = 0, wB = 0;
+    const cols = new Int16Array(W), us = new Float32Array(W);
+    for (let px = 0; px < W; px++) {
+      const s = s0 + (px + 0.5) / W * (s1 - s0);
+      let best = null, bi = -1;
+      for (let k = 0; k < G.segs.length; k++) {
+        const h = hit(Vx, Vz, s, -1, G.segs[k]);
+        if (h && (!best || h.t < best.t)) { best = h; bi = k; }
+      }
+      cols[px] = bi; us[px] = best ? best.u : 0;
+      if (bi >= 0) { if (G.segs[bi][5] === 0) wA++; else wB++; }
+    }
+    // draw runs of the same face in short chunks
+    const chunk = 6;
+    let px = 0;
+    while (px < W) {
+      const k = cols[px]; if (k < 0) { px++; continue; }
+      let e = px; while (e < W && cols[e] === k && e - px < chunk) e++;
+      const seg = G.segs[k], img = seg[5] === 0 ? imgA : imgB;
+      const iw = img.width, ih = img.height;
+      // stripe i of the image maps along this face
+      const u0 = us[px], u1 = e < W && cols[e] === k ? us[e] : (seg[5] === 0 ? 1 : 1);
+      const uu0 = seg[5] === 0 ? u0 : u0, uu1 = seg[5] === 0 ? u1 : u1;
+      const sx0 = ((seg[4] + uu0) / G.N) * iw, sx1 = ((seg[4] + uu1) / G.N) * iw;
+      const sw = Math.max(0.5, sx1 - sx0);
+      wctx.drawImage(img, Math.min(sx0, sx1), 0, sw, ih, px, top, e - px, wallPxH);
+      // fold shading: foreshortened faces read darker
+      const nx = seg[5] === 0 ? -Math.sin(G.th) : Math.sin(G.th), nz = Math.cos(G.th);
+      const mx = (seg[0] + seg[2]) / 2, mz = (seg[1] + seg[3]) / 2;
+      let vx = Vx - mx, vz = Vz - mz; const vl = Math.hypot(vx, vz); vx /= vl; vz /= vl;
+      const cs = Math.max(0, nx * vx + nz * vz);
+      wctx.fillStyle = 'rgba(0,0,0,' + (0.22 * (1 - cs)).toFixed(3) + ')';
+      wctx.fillRect(px, top, e - px, wallPxH);
+      px = e;
+    }
+    // floor line / stage deck hint
+    wctx.fillStyle = '#1a1814'; wctx.fillRect(0, top + wallPxH, W, H - top - wallPxH);
+
+    const tot = wA + wB || 1;
+    $('sA').innerHTML = Math.round(100 * wA / tot) + '<small>%</small>';
+    $('sB').innerHTML = Math.round(100 * wB / tot) + '<small>%</small>';
+    const off = Math.atan2(Math.abs(Vx), Vz) * 180 / Math.PI;
+    $('sAng').innerHTML = off.toFixed(1) + '°' + (off > S.ang ? ' <small>clean</small>' : ' <small>blend</small>');
+    $('sN').innerHTML = G.N + ' <small>·</small> ' + (2 * G.N);
+    $('sD').innerHTML = (G.d * 12).toFixed(1) + '<small> in</small>';
+    $('sF').innerHTML = (G.face * 12).toFixed(1) + '<small> in</small>';
+    $('seatTag').textContent = Vx === 0 ? 'center' : Math.abs(Vx).toFixed(1) + " ft " + (Vx < 0 ? 'house left' : 'house right') + ', ' + S.dist + ' ft back';
+    drawPlan(G);
+    spec(G);
+  }
+
+  // ---------- plan view ----------
+  function drawPlan(G) {
+    const W = planC.width, H = planC.height;
+    const cs = getComputedStyle(document.documentElement);
+    const ink = cs.getPropertyValue('--ink').trim(), ink2 = cs.getPropertyValue('--ink-2').trim();
+    const acc = cs.getPropertyValue('--accent').trim(), acc2 = cs.getPropertyValue('--accent-2').trim();
+    pctx.fillStyle = cs.getPropertyValue('--bg-2').trim(); pctx.fillRect(0, 0, W, H);
+    // world: x from -maxX..maxX, z from -1 .. dist+2 ; wall at top
+    const ROOM_W = 80, ROOM_Z0 = 20, ROOM_D = 50;
+    const maxX = Math.max(S.wid / 2, Math.abs(S.seatX), ROOM_W / 2) + 3;
+    const zMax = Math.max(S.dist, ROOM_Z0 + ROOM_D) + 3;
+    const sc = Math.min((W - 60) / (2 * maxX), (H - 100) / (zMax + 1.5));
+    const X = x => W / 2 + x * sc, Z = z => 64 + z * sc + 0.5 * sc;
+    // exaggerate pleat depth visually so it reads; note it
+    const ex = Math.max(1, 1.5 / Math.max(G.d, 0.05));
+    const exag = Math.min(ex, 6);
+    // seating area
+    pctx.strokeStyle = ink2; pctx.lineWidth = 1.5;
+    pctx.strokeRect(X(-ROOM_W / 2), Z(ROOM_Z0), ROOM_W * sc, ROOM_D * sc);
+    pctx.fillStyle = ink2; pctx.font = '500 16px "Archivo Narrow", sans-serif'; pctx.textAlign = 'left';
+    pctx.fillText('seating 80 × 50 ft', X(-ROOM_W / 2) + 8, Z(ROOM_Z0) + 20);
+    // faces
+    for (const s of G.segs) {
+      pctx.strokeStyle = s[5] === 0 ? acc2 : acc; pctx.lineWidth = 4;
+      pctx.beginPath(); pctx.moveTo(X(s[0]), Z(-s[1] * exag)); pctx.lineTo(X(s[2]), Z(-s[3] * exag)); pctx.stroke();
+    }
+    // backer
+    pctx.strokeStyle = ink2; pctx.lineWidth = 1; pctx.setLineDash([4, 4]);
+    pctx.beginPath(); pctx.moveTo(X(-S.wid / 2), Z(0)); pctx.lineTo(X(S.wid / 2), Z(0)); pctx.stroke(); pctx.setLineDash([]);
+    // sightlines
+    const vx = X(S.seatX), vz = Z(S.dist);
+    pctx.strokeStyle = ink2; pctx.lineWidth = 1;
+    pctx.beginPath(); pctx.moveTo(vx, vz); pctx.lineTo(X(-S.wid / 2), Z(0)); pctx.moveTo(vx, vz); pctx.lineTo(X(S.wid / 2), Z(0)); pctx.stroke();
+    // clean-view cone: beyond ±face angle off axis one image reads clean
+    const th = G.th;
+    pctx.strokeStyle = ink; pctx.setLineDash([2, 5]);
+    pctx.beginPath();
+    pctx.moveTo(X(0), Z(0)); pctx.lineTo(X(-Math.tan(th) * zMax), Z(zMax));
+    pctx.moveTo(X(0), Z(0)); pctx.lineTo(X(Math.tan(th) * zMax), Z(zMax)); pctx.stroke(); pctx.setLineDash([]);
+    // viewer
+    pctx.fillStyle = ink; pctx.beginPath(); pctx.arc(vx, vz, 7, 0, Math.PI * 2); pctx.fill();
+    pctx.fillStyle = ink; pctx.font = '600 20px "Archivo Narrow", sans-serif';
+    pctx.textAlign = 'left';
+    pctx.fillText('seat', vx + 12, vz + 7);
+    pctx.font = '500 18px "Archivo Narrow", sans-serif'; pctx.fillStyle = ink2;
+    pctx.textAlign = 'center';
+    pctx.fillText(S.wid + " ft wall · pleat depth drawn ×" + exag.toFixed(1), W / 2, H - 14);
+    pctx.textAlign = 'left'; pctx.fillStyle = acc2; pctx.fillText('■ image A faces', 16, 26);
+    pctx.fillStyle = acc; pctx.fillText('■ image B faces', 150, 26);
+    pctx.fillStyle = ink2; pctx.fillText('· · blend zone edge (±' + S.ang + '°)', 290, 26);
+  }
+
+  // ---------- spec ----------
+  function spec(G) {
+    const faceIn = G.face * 12, dIn = G.d * 12, faces = 2 * G.N;
+    const area = faces * G.face * S.hgt;                 // sq ft of print
+    const sheets = Math.ceil(faces * S.hgt / 8 / Math.floor(48 / faceIn));  // 4x8 ACM, faces ripped from 48"
+    const roomEdge = Math.atan2(S.wid / 2, S.dist) * 180 / Math.PI;
+    const rows = [
+      ['Pleats across ' + S.wid + ' ft', G.N + ' at ' + (G.pitch * 12).toFixed(2) + ' in pitch'],
+      ['Faces to print', faces + ' faces, each ' + faceIn.toFixed(2) + ' in × ' + S.hgt + ' ft'],
+      ['Pleat depth off the backer', dIn.toFixed(2) + ' in'],
+      ['Developed (flat) width', (faces * faceIn / 12).toFixed(1) + ' ft of print, ' + area.toFixed(0) + ' sq ft'],
+      ['3mm ACM, 4 × 8 sheets, faces ripped from the 48 in side', '~' + sheets + ' sheets, before waste'],
+      ['Front corner seat, 40 ft off center at 20 ft', '±' + (Math.atan2(40, 20) * 180 / Math.PI).toFixed(1) + '° off axis'],
+      ['Back corner seat, 40 ft off center at 70 ft', '±' + (Math.atan2(40, 70) * 180 / Math.PI).toFixed(1) + '° off axis'],
+      ['Wall edge from this seat', '±' + roomEdge.toFixed(1) + '° at ' + S.dist + ' ft'],
+      ['Clean single-image view', 'seats beyond ±' + (Math.tan(G.th) * 20).toFixed(1) + ' ft from center in the first row, ±' + (Math.tan(G.th) * 70).toFixed(1) + ' ft in the back row' + (Math.tan(G.th) * 70 > 40 ? ' (none in the back row)' : '')],
+      ['Ribs', 'CNC sawtooth ribs top, mid and bottom; register image A and B stripes to the ridge line, not the valley'],
+    ];
+    $('spec').innerHTML = rows.map(r => '<div><span>' + r[0] + '</span><b>' + r[1] + '</b></div>').join('');
+  }
+
+  // ---------- controls ----------
+  const bind = (id, key, fmt) => {
+    const el = $(id), out = $(id + 'o');
+    el.addEventListener('input', () => { S[key] = parseFloat(el.value); out.textContent = fmt(S[key]); syncPresets(); render(); });
+    out.textContent = fmt(S[key]);
+  };
+  bind('seatX', 'seatX', v => v.toFixed(1) + ' ft');
+  bind('dist', 'dist', v => v + ' ft');
+  bind('pitch', 'pitch', v => v + ' in');
+  bind('ang', 'ang', v => v + '°');
+  bind('wid', 'wid', v => v + ' ft');
+  bind('hgt', 'hgt', v => v + ' ft');
+
+  const presets = ['pL', 'pC', 'pR', 'pB'].map($);
+  function syncPresets() { presets.forEach(b => b.classList.toggle('on', parseFloat(b.dataset.x) === S.seatX && parseFloat(b.dataset.z) === S.dist)); }
+  presets.forEach(b => b.addEventListener('click', () => {
+    stopSweep(); S.seatX = parseFloat(b.dataset.x); S.dist = parseFloat(b.dataset.z); $('seatX').value = S.seatX; $('seatXo').textContent = S.seatX.toFixed(1) + ' ft'; $('dist').value = S.dist; $('disto').textContent = S.dist + ' ft'; syncPresets(); render();
+  }));
+
+  let raf = null, t0 = 0;
+  function stopSweep() { if (raf) cancelAnimationFrame(raf); raf = null; $('sweep').classList.remove('on'); $('sweep').textContent = 'Walk the room'; }
+  $('sweep').addEventListener('click', () => {
+    if (raf) return stopSweep();
+    $('sweep').classList.add('on'); $('sweep').textContent = 'Stop';
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    t0 = performance.now();
+    const step = now => {
+      const T = reduce ? 16000 : 8000;
+      const ph = ((now - t0) / T) % 1;
+      S.seatX = Math.round(Math.sin(ph * Math.PI * 2) * 40 * 4) / 4;
+      $('seatX').value = S.seatX; $('seatXo').textContent = S.seatX.toFixed(1) + ' ft'; syncPresets(); render();
+      raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+  });
+
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
+  render();
+})();
+</script>
+
+</body>
+</html>
